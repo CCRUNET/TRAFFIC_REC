@@ -123,4 +123,8 @@ def argument_parser():
         float32 --> 32 bit floating point number '\n'
         float64 --> 64 bit floating point number '\n'
         ''')    
+    parser.add_argument(
+        "--rclone-loc", dest="rclone_loc", type=str,
+        default= "0",
+        help="Rclone location for the data to be copied to [default=%(default)r]")
     return parser

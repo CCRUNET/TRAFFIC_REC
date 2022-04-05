@@ -8,6 +8,7 @@ Python Version: Python3
 
 This code sequeces to through neural netww
 """
+# %%
 #Imports necessary libraries 
 import numpy as np, os, scipy, glob
 from datetime import datetime
@@ -17,9 +18,6 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from keras import backend as K 
 np.random.seed(1200)  # For reproducibility
-
-#Allows use of modules from the Common_Functions Folders
-sys.path.append('../../_Neural_Networks')
 
 #imports appropriate files
 import NN_Cat_b14 as NN_CAT
@@ -32,164 +30,18 @@ import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
 import compare_prediction_actual_r4 as conf_mat
 import read_binary_r1 as read_binary_file
-import arg_parser as arg_parser
+import arg_parser
+import glob_vars as globs 
+glVar = globs.glVar
+import data_manip
+
 import warnings                                                                                                                
 warnings.filterwarnings('ignore')
 warnings.filterwarnings('ignore', category=FutureWarning)
 
+#Allows use of modules from the Common_Functions Folders
+sys.path.append('../../_Neural_Networks')
 
-#%%
-#This class allows global variable to be access by all functions
-class glVar ():
-    IQ_pair = np.array([[], []])
-    I = None
-    Q = None
-    fileNames = np.array([])
-    mod_type = []
-    mod_list = []
-    mod_int = []
-    mod_UT = ""
-    snr = []
-    train_x =  np.array([])
-    train_y = np.array([])
-    train_label = np.array([])
-    test_x = np.array([])
-    test_y = np.array([])
-    test_label = np.array([])
-    val_x = np.array([])
-    val_y = np.array([])
-    val_label = np.array([])
-
-    perm = np.array([])
-    data_hex = []
-    sep_train_test = True
-
-    myFile = ""
-    logfile = []
-    folder_base = "C:/Users/TINA/OneDrive - Rutgers University/Rutgers/Research/SDR/Data/"
-    
-    dtype = "float32"
-    folder_test = ""
-    folder_train = ""
-    folder_results = ""
-    myResults = pd.Series([])
-    #featureData = pd.Series([])
-    testData = pd.Series([])
-    test_data = {}
-    train_data = {}
-    train_X_size = 0
-    filePos = 0
-    dataArr = {}
-    NN_type = ""
-    dateCode = ""
-    num_points_train = 250
-    NNets = ["CAT", "CAT_CONV", "AE",  "BIN","ANOM"]
-    header = True
-    temp = None
-    temp1 = None
-    pred = []
-    param_value = []
-    col_param = ""
-    col_mods = "s1_mod"
-    cycle = 0
-    time_start_OVH = 0
-    time_data_collect = 0
-    
-    NN_train = 1
-    NN_Hist_folder = "NN_Hist"
-    exc_type = []
-    exc_list_train = []
-    exc_list_test = []
-    iter_f = 0; 
-    iter_test_dat = 0
-
-#%%
-#This portion of the code was written by Ryan Davis and modified by Tina Burns. 
-def getFileData(data_path, num_points_per_sample, num_samples_per_file, 
-                posStart = 0, testing = True, arr_exc = []):
-    
-    x = []; y = []; z = []; count = 0;  glVar.param_value = []
-    for fname in os.listdir(data_path):
-        #Ignores .DS_Store file ang files that don't meet the parameter specifications
-        if (fname != ".DS_Store" and fname not in arr_exc and fname.find(".txt")<0 and fname.find(".csv")<0): 
-            f = read_binary_file.read_binary_iq(fname = data_path+ '/'+fname, samples = num_samples_per_file, 
-                    num_points = num_points_per_sample, pos_sample = posStart, d_type = glVar.dtype)
-            #f = (np.asarray(f)/np.max(abs(np.asarray(f))))
-            f = f[:][0:(f.shape[0] - f.shape[0]%num_points_per_sample)] #Ensures even number of points
-            #print(posStart)
-            if count == 0: x = f.reshape(-1, num_points_per_sample)[0:num_samples_per_file]
-            else: x = np.vstack((x, f.reshape(-1, num_points_per_sample)[0:num_samples_per_file]))
-            y = y + [ntpath.basename(fname)]*num_samples_per_file
-        
-            #The portion of the fuction get the modulation information
-            mod = glVar.testData[glVar.testData["filename"] == fname][glVar.col_mods].values.item()
-            z = z + [mod]*num_samples_per_file            
-            if testing: 
-                glVar.param_value.append(float(glVar.testData[glVar.testData["filename"] == 
-                    fname][glVar.col_param].values.item()))               
-                count = count +1
-    return x, np.asarray(y), np.asarray(z)
-#%%
-# Shuffles Data
-def shuffleData(x):
-    np.random.seed(1200)
-    myPermutation = np.random.permutation(x.shape[0])
-    x = x[myPermutation]
-    return x
-
-#%%
-def getExclusionList(range_param  = "s1_sinr", range_arr = [-1000, 1000], exc_param = "s1_mod", exc_arr = [""]):
-    arr = []
-    #Makes all values in exculsion column lower case
-    glVar.testData[exc_param] = glVar.testData[exc_param].str.lower() 
-    for exc in exc_arr:
-        arr = arr + list(glVar.testData["filename"][glVar.testData[exc_param] == exc.lower()])
-    #print([glVar.testData[range_param] >= range_arr[0]])
-    arr = arr + list(glVar.testData["filename"][glVar.testData[range_param] < range_arr[0]])
-    arr = arr + list(glVar.testData["filename"][glVar.testData[range_param] > range_arr[1]])
-    #print("making exclusion list")
-    return arr
-#%%
-#Main function of the program tha executes the main operations
-def genData(myFile, numDatapoints = 100, numSamples = 200, pos = 0, 
-            mod = "", NN_Type = "CAT", testing = True, arr_exc = []):    
-    my_dict = {}
-    #Inputs information into global variables for later usage
-    #The number of bytes must be divisible by 8 in order to properly work with the NN
-    glVar.IQ_pair, glVar.fileNames, glVar.mod_type = getFileData(myFile, numDatapoints, numSamples, 
-            posStart = pos, testing = testing, arr_exc = arr_exc)      
-    
-    #glVar.IQ_pair[:, 1::4] = 0 
-    glVar.I = glVar.IQ_pair[:, 0::2]
-    glVar.Q = glVar.IQ_pair[:, 1::2]
-    #glVar.IQ_pair = glVar.Q/np.max(glVar.Q)
-    #glVar.IQ_pair = glVar.I
-    glVar.IQ_pair = glVar.IQ_pair/np.max(glVar.Q) #Normalizes data
-    
-    if len(glVar.IQ_pair) >= 1:
-        #Shuffles the all data arrays
-        glVar.IQ_pair = shuffleData(glVar.IQ_pair)
-        glVar.fileNames = shuffleData(glVar.fileNames)
-        glVar.mod_type = shuffleData(glVar.mod_type)
-        
-        #Get unique values of modulation schemes
-        glVar.mod_list = pd.get_dummies(glVar.mod_type)
-        #Puts mod_int list in the form of integar values
-        if glVar.NN_type  == "ANOM":
-            glVar.mod_int = pd.factorize(glVar.mod_type)[0]
-        #Puts mod_int list in the form of binary arrays (for categorical classification)
-        else:
-            glVar.mod_int = glVar.mod_list.values
-        #Stores information in dictionary
-        my_dict = {
-           #"IQ_stack": glVar.IQ_stack, 
-            "IQ_pair": glVar.IQ_pair,
-            "mod_type": glVar.mod_type,
-            "mod_int": glVar.mod_int,
-            glVar.col_param: glVar.param_value
-            }
-    return my_dict
-    
 # %%
 def runTest(dateCode, datapoints = 100, samples = 200, writeData = True, 
             num_iter = 2, act1 = "", act2 = "", testAct = False, options = None):
@@ -237,7 +89,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                             dp = glVar.num_points_train
                         else: dp = datapoints
                         #print("Number of training samples: ", train_samples)
-                        glVar.train_data = genData(glVar.folder_train, dp, train_samples, 
+                        glVar.train_data = data_manip.genData(glVar.folder_train, dp, train_samples, 
                             mod = m, NN_Type = NNet_test, arr_exc = glVar.exc_list_train)
                         glVar.train_y = np.asarray(glVar.mod_int)               
                         glVar.train_label = glVar.mod_type
@@ -255,7 +107,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                     
                     if glVar.iter_test_dat == 0: print("'\n'Generating Test Data")
                     glVar.iter_test_dat = glVar.iter_test_dat +1
-                    glVar.test_data = genData(glVar.folder_test, datapoints, samples//2,
+                    glVar.test_data = data_manip.genData(glVar.folder_test, datapoints, samples//2,
                         pos = datapoints*samples, mod = m, NN_Type = NNet_test, 
                         arr_exc = glVar.exc_list_test)
                     if len(glVar.IQ_pair) < 1: 
@@ -380,23 +232,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                                         myFile =glVar.dateCode + "_" + os.path.basename(glVar.folder_test) + "_"
                                         + glVar.NN_type)
                                     glVar.temp = labels
- 
-#%% Gets list of folders to be tested 
-def getFolderList(loc_data):
-    #a = [*set([loc_data + "/" + p for p in os.listdir(loc_data)])]
-    a = []; 
-    #os.join create adds a '\' when joining info.  
-    for root, dirs, files in os.walk(loc_data):
-        for d in dirs:
-            if(d.lower().find("data") <0 and d.lower().find("plot") <0 and d.find("cleansig")<0): 
-                a.append( str(root + '/' + d).replace("//", "/"))
-        for f in files:
-            if (f.lower().find("log") > -1 or f.lower().find(".csv") > -1): 
-                glVar.logfile.append(root + "/" + f)
-                
-    if len(a) == 0: a.append(loc_data)
-    if not os.path.exists("Data/Results"): os.makedirs("Data/Results")
-    return a
+
 # %%
 def main(options=None):
     glVar.time_data_collect = time.time()
@@ -422,10 +258,10 @@ def main(options=None):
     glVar.NN_Hist_folder = options.NN_Hist_folder.replace("//","/").replace("./", "")
     
     if glVar.folder_test =="" or glVar.folder_test == glVar.folder_train: 
-        folders_test = getFolderList(glVar.folder_train)
+        folders_test = data_manip.getFolderList(glVar.folder_train)
         glVar.sep_train_test = False
     else: 
-        folders_test = getFolderList(glVar.folder_test)
+        folders_test = data_manip.getFolderList(glVar.folder_test)
         print("Original Test Folders: ", folders_test)
         #Removes training folder from test set
         #folders_test = [x for x in folders_test if (glVar.folder_train[0:-1] not in x and "train" not in x)]
@@ -448,15 +284,15 @@ def main(options=None):
     else: sys.exit("Logfile not available. Please include an appropriate logfile location")
 
     #Gets list of files to exclude from the training and test data
-    #options.range_train = list(np.asarray(options.range_train).astype(float))
-    #options.range_test = list(np.asarray(options.range_test).astype(float))
-    # glVar.exc_list_train = getExclusionList(range_param = options.range_param, range_arr = options.range_train, 
-    #                             exc_param = options.exc_param, exc_arr = options.exc_train)
-    # glVar.exc_list_test = getExclusionList(range_param = options.range_param, range_arr = options.range_test, 
-    #                             exc_param = options.exc_param, exc_arr = options.exc_test)
+    options.range_train = list(np.asarray(options.range_train).astype(float))
+    options.range_test = list(np.asarray(options.range_test).astype(float))
+    glVar.exc_list_train = data_manip.getExclusionList(range_param = options.range_param, range_arr = options.range_train, 
+                                exc_param = options.exc_param, exc_arr = options.exc_train)
+    glVar.exc_list_test = data_manip.getExclusionList(range_param = options.range_param, range_arr = options.range_test, 
+                                exc_param = options.exc_param, exc_arr = options.exc_test)
     
-    glVar.exc_list_test = []
-    glVar.exc_list_train = []
+    # glVar.exc_list_test = []
+    # glVar.exc_list_train = []
     
     #Fuction to return a boolean value
     #Code from:
@@ -481,8 +317,12 @@ def main(options=None):
         runTest(glVar.dateCode, datapoints = options.num_points, 
         samples = options.samples, num_iter = options.iter, 
         testAct = str2bool(options.test_act), options = options)
-    print("Done")
 
+    if options.rclone_loc == "1": 
+        print("Copying data to " + options.rclone_loc)
+        os.system("rlcone copy Data/Results/ " + options.rclone_loc)
+    print("Done")
+    return 0
 #%% Runs main port of program
 if __name__ == '__main__':
     main()

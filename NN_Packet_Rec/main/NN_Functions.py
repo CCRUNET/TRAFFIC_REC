@@ -14,9 +14,6 @@ import numpy as np, os, scipy, glob
 from datetime import datetime
 import sys, ntpath, time
 import pandas as pd
-from argparse import ArgumentParser
-import matplotlib.pyplot as plt
-from keras import backend as K 
 np.random.seed(1200)  # For reproducibility
 
 #imports appropriate files
@@ -27,7 +24,7 @@ import NN_AE_STD_b14 as NN_AE
 import NN_AE_ANOM_b15 as NN_ANOM
 import NN_LSTM_b7 as NN_LSTM
 import NN_Simple_b3 as NN_SIMPLE
-import NN_matched_filter_b14 as MATCH
+import NN_matched_filter_b13 as MATCH
 
 class glVar():
     temp = None
