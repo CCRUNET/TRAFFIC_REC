@@ -28,7 +28,7 @@ import NN_AE_ANOM_b15 as NN_ANOM
 import NN_LSTM_b7 as NN_LSTM
 import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
-import compare_prediction_actual_r4 as conf_mat
+import compare_prediction_actual_r5 as conf_mat
 import read_binary_r1 as read_binary_file
 import arg_parser
 import glob_vars as globs 
@@ -51,14 +51,16 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
     dataArr = ["IQ_pair"]
     for NNet_test in glVar.NNets:
         if NNet_test == "ANOM": NNet = NN_ANOM.NN()
-        elif NNet_test == "CAT": NNet = NN_CAT.NN()
-        elif NNet_test == "CONV": NNet = NN_CAT_CONV.NN()
+        elif (NNet_test == "CAT" or NNet_test == "FCN" or NNet_test == "FCNN" \
+              or NNet_test == "FC"): 
+            NNet = NN_CAT.NN()
+        elif NNet_test == "CONV" or NNet_test == "CNN": NNet = NN_CAT_CONV.NN()
         elif NNet_test == "BIN": NNet = NN_BIN.NN()
         elif NNet_test == "AE": NNet = NN_AE.NN()
         elif NNet_test == "LSTM": NNet = NN_LSTM.NN()
         elif NNet_test == "SIMPLE": NNet = NN_SIMPLE.NN()
         elif NNet_test == "MATCH": NNet = MATCH.NN()
-        else: NNet = NN_CAT.NN()
+        #else: NNet = NN_CAT.NN()
         
         glVar.NN_type = NNet.getType()    
         NNet.__init__
@@ -141,7 +143,13 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                     if not testAct: activations = [""];
                     else: activations = ["elu", "softmax", "selu", "softplus", "softsign", 
                         "relu", "tanh", "sigmoid", "hard_sigmoid", "exponential", 
-                        "linear"]; 
+                    "linear"]; 
+                    
+                    # Setups up labels
+                    if glVar.NN_type == "MATCH": 
+                        labels = pd.get_dummies(glVar.pred).columns.tolist()
+                        glVar.pred =  np.asarray(pd.get_dummies(glVar.pred).values)
+                    else: labels = list(glVar.mod_list.columns.values)
 
                     for a1 in  activations:
                         for a2 in activations:                     
@@ -208,6 +216,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                                             "Param Train Max": [options.range_train[1]],
                                             "Param Test Min": [options.range_test[0]],
                                             "Param Test Max": [options.range_test[1]],
+                                            "Classes": [labels],
                                             }).to_csv("Data/Results/" + glVar.dateCode + "_Test.csv", mode = 'a', 
                                                       header = glVar.header)
                                     glVar.header = False
@@ -219,21 +228,16 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                                 print(glVar.col_param, np.round(np.mean(glVar.param_value), 2))
                                 print( " Activation 1:  " + af1 + " Activation 2:  " + af2)
                                 if options.conf_mat: 
-                                    #Sets up prediction array as a categorical array
-                                    glVar.temp1 = glVar.pred
-                                    if glVar.NN_type == "MATCH": 
-                                        labels = pd.get_dummies(glVar.pred).columns.tolist()
-                                        glVar.pred =  np.asarray(pd.get_dummies(glVar.pred).values)
-                                    else: labels = list(glVar.mod_list.columns.values)
+                                    #Sets up prediction array as a categorical arra
                                     conf_mat.main(y_pred = glVar.pred, y_true = glVar.test_y,
                                         #Gets a list of modulation types that aligns with binary array 
-                                        labels_text = labels, 
+                                        labels = labels, 
                                         myFolder = "Data/Results/", 
                                         myFile =glVar.dateCode + "_" + os.path.basename(glVar.folder_test) + "_"
                                         + glVar.NN_type)
-                                    glVar.temp = labels
 
-# %%
+
+# %% Main unction that run the Neural Network  Code
 def main(options=None):
     glVar.time_data_collect = time.time()
     if options is None:
@@ -269,7 +273,7 @@ def main(options=None):
         if glVar.folder_train in folders_test: folders_test.remove(glVar.folder_train)
 
     #Creates list of logfiles.  
-    #If the entry is a directory, all the files in the directory are appended to teh list
+    #If the entry is a directory, all the files in the directory are appended to the list
     li = []
     if len(options.logfile[0]) > 0: 
         for i in options.logfile:

@@ -28,8 +28,8 @@ def argument_parser():
         default= ["CAT", "CONV", "LSTM", "BIN", "ANOM",  "AE"],
         help='''Enter the list of nueral networks to be tested. \n
         BIN --> Binary Classifier \n
-        CAT --> Categorical \n
-        CONV --> Convolutional \n
+        FCN --> Categorical \n
+        CNN --> Convolutional \n
         AE --> Autoencoder \n
         AMOM --> Anomaly Detector \n
         SIMP--> Simple \n

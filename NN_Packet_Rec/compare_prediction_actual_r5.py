@@ -29,8 +29,6 @@ class glVar():
     y_pred_cat = []
     y_true = []
     y_true_num = []
-    y_labels_text = ["16qam", "8psk", "bpsk", "qpsk"]
-    y_labels_num = [1, 2, 3, 4]
     comp = []
     acc = 0
     conf_mat = []
@@ -38,15 +36,19 @@ class glVar():
     temp2 = None
 
 #Sets up the arrays and matrices
-def setupArrays(y_pred = "", y_true = ""):
+def setupArrays(y_pred = "", y_true = "", labels = []):
+    # Reads in predcition data
     if y_pred == "": glVar.y_pred = pd.read_csv(glVar.folder_base + "/test_pred.csv").values
     else: glVar.y_pred= y_pred
+    
+    # Sets up numeical arrays for the predictions
     glVar.y_pred_cat = np.zeros_like(glVar.y_pred)
     glVar.y_pred_cat[np.arange(len(glVar.y_pred)), glVar.y_pred.argmax(1)] = 1
-    glVar  .y_pred_num = np.asarray(np.asmatrix(glVar.y_pred_cat*[1, 2, 3, 4]).sum(axis = 1))
+    glVar.y_pred_num = np.asarray(np.asmatrix(glVar.y_pred_cat*list(range(1, len(labels)+1))).sum(axis = 1))
+    
     if y_true == "": glVar.y_true = pd.read_csv(glVar.folder_base + "/test_y.csv").values
     else: glVar.y_true = y_true
-    glVar.y_true_num = np.asarray(np.asmatrix(glVar.y_true*[1, 2, 3, 4]).sum(axis = 1))
+    glVar.y_true_num = np.asarray(np.asmatrix(glVar.y_true*list(range(1, len(labels)+1))).sum(axis = 1))
     
     glVar.comp = (glVar.y_pred_num == glVar.y_true_num).astype(int)
     glVar.acc = np.round((sum(glVar.comp)/glVar.comp.shape[0])[0], 2)
@@ -63,7 +65,7 @@ def confusionMatrixPlot(y_test, pred, labels_num, labels_text = [],
     print(cm)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    cmap = LinearSegmentedColormap.from_list('RedGreenRed', ['crimson', 'lime'])
+    cmap = LinearSegmentedColormap.from_list('RedGreenRed', ['red', 'white'])
     cax = sns.heatmap(cm, annot=True, ax = ax, cmap = mpl.cm.Blues);
     #cax = ax.matshow(cm)
     #plt.title("Confusion matrix of the classifier\n")
@@ -80,14 +82,13 @@ def confusionMatrixPlot(y_test, pred, labels_num, labels_text = [],
     plt.close()
 #%%
 #Runs the main operations of the program
-def main(y_pred = "", y_true ="", labels_num = "NA", labels_text = "NA", 
+def main(y_pred = "", y_true ="", labels= ["16qam", "8psk", "bpsk", "qpsk"], 
          myFolder = "", myFile = ""):
-    setupArrays(y_pred, y_true)
+    setupArrays(y_pred, y_true, labels)
     
-    if labels_text == "NA": labels_text = glVar.y_labels_text
-    if labels_num == "NA": labels_num = glVar.y_labels_num
+    labels_num = list(range(1, len(labels)+1))
     confusionMatrixPlot(glVar.y_true_num, glVar.y_pred_num, labels_num, 
-                        labels_text, myFolder, myFile)
+                        labels, myFolder, myFile)
 
     pd.DataFrame({
             "Number of correct predictions ":  [sum(glVar.comp)[0]], 
