@@ -17,15 +17,20 @@ import pandas as pd
 
 # %% This class allows global variable to be access by all functions
 class glVar ():
+    options = None
+    
     IQ_pair = np.array([[], []])
     I = None
     Q = None
+    
     fileNames = np.array([])
+    
     mod_type = []
     mod_list = []
     mod_int = []
     mod_UT = ""
     snr = []
+    
     train_x =  np.array([])
     train_y = np.array([])
     train_label = np.array([])
@@ -42,6 +47,7 @@ class glVar ():
 
     myFile = ""
     logfile = []
+    file_results = "";
     folder_base = "C:/Users/TINA/OneDrive - Rutgers University/Rutgers/Research/SDR/Data/"
     
     dtype = "float32"
@@ -49,7 +55,7 @@ class glVar ():
     folder_train = ""
     folder_results = ""
     myResults = pd.Series([])
-    #featureData = pd.Series([])
+
     testData = pd.Series([])
     test_data = {}
     train_data = {}
@@ -68,8 +74,6 @@ class glVar ():
     col_param = ""
     col_mods = "s1_mod"
     cycle = 0
-    time_start_OVH = 0
-    time_data_collect = 0
     
     NN_train = 1
     NN_Hist_folder = "NN_Hist"
@@ -78,3 +82,26 @@ class glVar ():
     exc_list_test = []
     iter_f = 0; 
     iter_test_dat = 0
+    
+    m = None
+    time_start_OVH = 0
+    time_data_collect = 0
+    time_OVH = 0 
+    time_NN = 0 
+    time_train = 0 
+    time_test = 0
+
+    
+class NN_data():
+    test = None
+    acc_test = None
+    loss_test = None
+    acc_val = None      
+    loss_val = None
+    datapoints = None
+    labels = []
+    a1 = None
+    a2 = None
+    testAct = None
+    train_model = None
+    e = None

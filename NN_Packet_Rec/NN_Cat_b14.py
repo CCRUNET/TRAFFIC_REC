@@ -105,7 +105,6 @@ class NN():
         if (not testAct or act1 == ""):
             act1 = "relu"  
             act2 = "softmax"
-
         time_train_start = time.time()
         if train_model:
             #Removes previous files to prevent file creation errors
@@ -117,15 +116,14 @@ class NN():
 
             model = Model(inputs = input_img, outputs = output)
             print(model.summary()) 
-            
             model.compile(optimizer='Adam',
                               loss='categorical_crossentropy',
                               metrics=['accuracy'])
-       
             hist = model.fit(X_train, Y_train,
                               epochs=epochs, batch_size=batch_size, 
                               validation_data=(X_val, Y_val),
                               shuffle=False) 
+
             model.save_weights(weight_file)
             model.save(model_file)
 

@@ -8,12 +8,10 @@ Created on Tue Apr  5 17:04:53 2022
 # %%
 #Imports necessary libraries 
 import numpy as np, os, scipy, glob
-from datetime import datetime
 import sys, ntpath, time
 import pandas as pd
-from argparse import ArgumentParser
-import matplotlib.pyplot as plt
-from keras import backend as K 
+#mport matplotlib.pyplot as plt
+#from keras import backend as K 
 np.random.seed(1200)  # For reproducibility
 import read_binary_r1 as read_binary_file
 import glob_vars as globs 

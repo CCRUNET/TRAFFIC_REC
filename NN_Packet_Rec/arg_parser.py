@@ -24,6 +24,10 @@ def argument_parser():
         default= "",
         help="Set testing data folder location [default=%(default)r]")
     parser.add_argument(
+        "--file-results", dest="file_results", type=str, 
+        default= "",
+        help="Sets the location for the results summary [default=%(default)r]")
+    parser.add_argument(
         "--neural-nets", dest="NNets", type=str, nargs='+', 
         default= ["CAT", "CONV", "LSTM", "BIN", "ANOM",  "AE"],
         help='''Enter the list of nueral networks to be tested. \n
@@ -72,6 +76,23 @@ def argument_parser():
         "--exc-test", dest="exc_test", type=str, nargs='+',
         default= [""],
         help="Values in test data to be exluded [default=%(default)r]")
+    parser.add_argument(
+        "--exc-seq", dest="exc_seq", type = int,
+        default= 0,
+        help='''
+        Indicates if the exclusion we should sequence through the exclsion array \n\r
+        0 --> do not sequence \n\r
+        1 --> Sequence
+        [default=%(default)r]
+        ''')
+    parser.add_argument(
+        "--exc-start", dest="exc_start", type = int,
+        default= 1,
+        help='''Indicates the element of the exlusion array to where the sequence
+        should start
+        [default=%(default)r]''')
+    
+    
     parser.add_argument(
         "--range-param", dest="range_param", type=str, 
         default= "s1_sinr",

@@ -21,7 +21,7 @@ np.random.seed(1200)  # For reproducibility
 
 #imports appropriate files
 import NN_Cat_b14 as NN_CAT
-import NN_Cat_Conv_b19 as NN_CAT_CONV
+import NN_Conv_b19 as NN_CAT_CONV
 import NN_Binary_b14 as NN_BIN
 import NN_AE_STD_b14 as NN_AE
 import NN_AE_ANOM_b15 as NN_ANOM
@@ -33,7 +33,9 @@ import read_binary_r1 as read_binary_file
 import arg_parser
 import glob_vars as globs 
 glVar = globs.glVar
+NN_data = globs.NN_data
 import data_manip
+import write_data_to_file
 
 import warnings                                                                                                                
 warnings.filterwarnings('ignore')
@@ -46,6 +48,8 @@ sys.path.append('../../_Neural_Networks')
 def runTest(dateCode, datapoints = 100, samples = 200, writeData = True, 
             num_iter = 2, act1 = "", act2 = "", testAct = False, options = None):
     glVar.cycle = glVar.cycle + 1
+    NN_data.datapoints = datapoints
+    NN_data.testAct = testAct
     #time_start_OVH = time.time()
     epochs = [10]
     dataArr = ["IQ_pair"]
@@ -78,8 +82,9 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
             K.clear_session()
             for j in range(1, num_iter+1):
                 for m in modulations:
+                    glVar.m = m
                     #gets test Data
-                    glVar.mod_UT = m
+                    glVar.mod_UT = glVar.m
                 
                     if glVar.iter_test_dat == 0: print("Generating Training Data")                    
                     #Only generates training data if it is in a different folder
@@ -89,7 +94,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                         if NNet_test == "MATCH": 
                             train_samples = 1
                             dp = glVar.num_points_train
-                        else: dp = datapoints
+                        else: dp = NN_data.datapoints
                         #print("Number of training samples: ", train_samples)
                         glVar.train_data = data_manip.genData(glVar.folder_train, dp, train_samples, 
                             mod = m, NN_Type = NNet_test, arr_exc = glVar.exc_list_train)
@@ -102,15 +107,14 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                         train_model = False
                         #print(glVar.train_x.shape)
                         if glVar.train_x.shape[0] <= 1:
-                            glVar.train_x = np.zeros((samples, datapoints))     
+                            glVar.train_x = np.zeros((samples, NN_data.datapoints))     
                             glVar.train_y = np.zeros((samples, 1))                
                             glVar.train_label = np.zeros((samples, 1)) 
-
-                    
+      
                     if glVar.iter_test_dat == 0: print("'\n'Generating Test Data")
                     glVar.iter_test_dat = glVar.iter_test_dat +1
-                    glVar.test_data = data_manip.genData(glVar.folder_test, datapoints, samples//2,
-                        pos = datapoints*samples, mod = m, NN_Type = NNet_test, 
+                    glVar.test_data = data_manip.genData(glVar.folder_test, NN_data.datapoints, samples//2,
+                        pos = NN_data.datapoints*samples, mod = m, NN_Type = NNet_test, 
                         arr_exc = glVar.exc_list_test)
                     if len(glVar.IQ_pair) < 1: 
                         # Allows for data to be trained if test data is empty and the 
@@ -150,18 +154,25 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                         labels = pd.get_dummies(glVar.pred).columns.tolist()
                         glVar.pred =  np.asarray(pd.get_dummies(glVar.pred).values)
                     else: labels = list(glVar.mod_list.columns.values)
-
+                    NN_data.labels = labels
+                    
                     for a1 in  activations:
-                        for a2 in activations:                     
-                            for e in epochs:                        
+                        NN_data.a1 = a1
+                        for a2 in activations:
+                            NN_data.a2 = a2
+                            for e in epochs:
+                                NN_data.e = e
                                 if glVar.NN_type == "ANOM":
                                     glVar.train_y = glVar.train_x
                                     glVar.test_y = glVar.test_x
                                     glVar.val_y = glVar.val_x
                                 print("Starting Neural Network...")
-                                time_NN = time.time()
-                                (loss_test, acc_test, loss_val, acc_val, glVar.pred, 
-                                  af1, af2, time_train, time_test) = NNet.runNN(
+                                glVar.time_NN = time.time()
+                                (NN_data.loss_test, NN_data.acc_test, 
+                                 NN_data.loss_val, NN_data.acc_val, 
+                                 glVar.pred, af1, af2, 
+                                 glVar.time_train, glVar.time_test
+                                  ) = NNet.runNN(
                                     X_train = glVar.train_x, 
                                     Y_train = glVar.train_y,
                                     Y_train_label = glVar.train_label,
@@ -171,60 +182,27 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                                     X_val = glVar.val_x, 
                                     Y_val = glVar.val_y, 
                                     Y_val_label = glVar.val_label,
-                                    batch_size = 128, epochs = e, 
-                                    mod = m, act1 = a1, act2 = a2,
+                                    batch_size = 128, epochs = NN_data.e, 
+                                    mod = glVar.m, act1 = NN_data.a1, act2 = NN_data.a2,
                                     testAct = testAct, 
                                     #plotCurve = False,
                                     train_model= train_model, 
                                     folder_NN_hist = glVar.NN_Hist_folder
                                     )
-                                time_NN = np.round(time.time() - time_NN, 2)                                     
+                                glVar.time_NN = np.round(time.time() - glVar.time_NN, 2)                                     
                                 atten = 0; snr = 100;
                                 name = os.path.basename(glVar.folder_train)
                                 if name.find("atten") > -1: atten = name.split("atten")[1]
                                 if name.find("snr") > -1:  snr = name.split("snr")[1]
-                                time_OVH = np.round(time.time() -glVar.time_start_OVH - time_NN, 2)
+                                glVar.time_OVH = np.round(time.time() - glVar.time_start_OVH - glVar.time_NN, 2)
                              
-                                if writeData:
-                                    pd.DataFrame({
-                                            #"Datatype" : [i], 
-                                            glVar.col_param: [np.round(np.mean(glVar.param_value), 2)],
-                                            "Acc-Test": [np.round(acc_test, 3)], 
-                                            "Loss-Test ": [np.round(loss_test, 2)],
-                                            "Acc-Val": [np.round(acc_val, 3)],        
-                                            "Loss-Val ": [np.round(loss_val, 2)], 
-                                            "Epochs": [e],
-                                            "Train Samples": [glVar.train_x.shape[0]],
-                                            "Test Samples": [glVar.test_x.shape[0]],
-                                            "Validation Samples": [glVar.val_x.shape[0]],
-                                            "Datapoints": [datapoints],              
-                                            "dir_train": [os.path.basename(os.path.dirname(glVar.folder_train))],
-                                            "folder_train": [os.path.basename(glVar.folder_train)],   
-                                            "dir_test": [os.path.basename(os.path.dirname(glVar.folder_test))],
-                                            "folder_test": [os.path.basename(glVar.folder_test)],
-                                            "NN_Type": [glVar.NN_type],
-                                            "Mod-Type": [m], 
-                                            "time_data_collect": [glVar.time_data_collect], 
-                                            "time_data_manip": [time_OVH], 
-                                            "time_NN": [time_NN], 
-                                            "time_train": [time_train], 
-                                            "time_test": [time_test],
-                                            "Activation 1: ": [a1],
-                                            "Activation 2": [a2],
-                                            "Param ": [options.range_param],
-                                            "Param Train Min": [options.range_train[0]],
-                                            "Param Train Max": [options.range_train[1]],
-                                            "Param Test Min": [options.range_test[0]],
-                                            "Param Test Max": [options.range_test[1]],
-                                            "Classes": [labels],
-                                            }).to_csv("Data/Results/" + glVar.dateCode + "_Test.csv", mode = 'a', 
-                                                      header = glVar.header)
-                                    glVar.header = False
-                                    glVar.time_data_collect = 0
-                                    
+                                # Writes data to file
+                                write_data_to_file.writeData(options)
+                                glVar.time_data_collect = 0
+                                #Prints results to the screen
                                 print("NN: "+ glVar.NN_type + "  ATTEN: " + str(atten) + "  Mod: " + m)
                                 print(" Test Folder: " + os.path.basename(glVar.folder_test)) 
-                                print("Time of NN: ", time_NN)
+                                print("Time of NN: ", glVar.time_NN)
                                 print(glVar.col_param, np.round(np.mean(glVar.param_value), 2))
                                 print( " Activation 1:  " + af1 + " Activation 2:  " + af2)
                                 if options.conf_mat: 
@@ -236,12 +214,12 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                                         myFile =glVar.dateCode + "_" + os.path.basename(glVar.folder_test) + "_"
                                         + glVar.NN_type)
 
-
 # %% Main unction that run the Neural Network  Code
 def main(options=None):
     glVar.time_data_collect = time.time()
     if options is None:
-        options = arg_parser.argument_parser().parse_args()       
+        options = arg_parser.argument_parser().parse_args()
+    globs.glVar.options = options
     print("Testing")
     #Sets the folder locations to be tested 
     glVar.dateCode = str(datetime.now()).replace('.', '').replace(' ', '_').replace(':', '')
@@ -285,7 +263,7 @@ def main(options=None):
         #Concatentate pd dataframe. Removes entries with duplicate filenames
         glVar.testData = pd.concat(li, axis=0, ignore_index=True).drop_duplicates(subset=["filename"])
         glVar.testData["s1_mod"] = glVar.testData["s1_mod"].str.lower()
-    else: sys.exit("Logfile not available. Please include an appropriate logfile location")
+    else: sys.exit("Logfile not available. Please inNNude an appropriate logfile location")
 
     #Gets list of files to exclude from the training and test data
     options.range_train = list(np.asarray(options.range_train).astype(float))
@@ -294,10 +272,7 @@ def main(options=None):
                                 exc_param = options.exc_param, exc_arr = options.exc_train)
     glVar.exc_list_test = data_manip.getExclusionList(range_param = options.range_param, range_arr = options.range_test, 
                                 exc_param = options.exc_param, exc_arr = options.exc_test)
-    
-    # glVar.exc_list_test = []
-    # glVar.exc_list_train = []
-    
+
     #Fuction to return a boolean value
     #Code from:
     #https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -326,7 +301,7 @@ def main(options=None):
         print("Copying data to " + options.rclone_loc)
         os.system("rlcone copy Data/Results/ " + options.rclone_loc)
     print("Done")
-    return 0
+    return options
 #%% Runs main port of program
 if __name__ == '__main__':
     main()
