@@ -67,7 +67,7 @@ def argument_parser():
     parser.add_argument(
         "--exc-param", dest="exc_param", type=str, 
         default= "s1_mod",
-        help="Name of the parameter to be exluded [default=%(default)r]")
+        help="Name of the parameter colume for the exclusion list [default=%(default)r]")
     parser.add_argument(
         "--exc-train", dest="exc_train", type=str, nargs='+',
         default= [""],
@@ -76,6 +76,10 @@ def argument_parser():
         "--exc-test", dest="exc_test", type=str, nargs='+',
         default= [""],
         help="Values in test data to be exluded [default=%(default)r]")
+    parser.add_argument(
+        "--inc-arr", dest="inc_arr", type=str, nargs='+',
+        default= [""],
+        help="Values in data to be included in the test c_default=%(default)r]")
     parser.add_argument(
         "--exc-seq", dest="exc_seq", type = int,
         default= 0,

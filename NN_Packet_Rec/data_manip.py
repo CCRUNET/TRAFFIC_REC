@@ -108,10 +108,15 @@ def shuffleData(x):
     x = x[myPermutation]
     return x    
 #%%
-def getExclusionList(range_param  = "s1_sinr", range_arr = [-1000, 1000], exc_param = "s1_mod", exc_arr = [""]):
+def getExclusionList(range_param  = "s1_sinr", range_arr = [-1000, 1000], exc_param = "s1_mod", exc_arr = [""], 
+                     inc_arr = []):
     arr = []
     #Makes all values in exculsion column lower case
     glVar.testData[exc_param] = glVar.testData[exc_param].str.lower() 
+    if len(inc_arr) > 0: 
+        print("Using inclusion list to create an exclusion list")
+        exc_arr = set(glVar.testData[exc_param]).difference(inc_arr)
+    print("Creating exclusion list")   
     for exc in exc_arr:
         arr = arr + list(glVar.testData["filename"][glVar.testData[exc_param] == exc.lower()])
     #print([glVar.testData[range_param] >= range_arr[0]])
@@ -119,3 +124,4 @@ def getExclusionList(range_param  = "s1_sinr", range_arr = [-1000, 1000], exc_pa
     arr = arr + list(glVar.testData["filename"][glVar.testData[range_param] > range_arr[1]])
     #print("making exclusion list")
     return arr
+

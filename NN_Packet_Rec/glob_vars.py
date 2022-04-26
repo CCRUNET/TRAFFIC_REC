@@ -49,11 +49,11 @@ class glVar ():
     logfile = []
     file_results = "";
     folder_base = "C:/Users/TINA/OneDrive - Rutgers University/Rutgers/Research/SDR/Data/"
-    
-    dtype = "float32"
     folder_test = ""
     folder_train = ""
     folder_results = ""
+    
+    dtype = "float32"
     myResults = pd.Series([])
 
     testData = pd.Series([])
@@ -99,7 +99,7 @@ class NN_data():
     acc_val = None      
     loss_val = None
     datapoints = None
-    labels = []
+    labels = None
     a1 = None
     a2 = None
     testAct = None

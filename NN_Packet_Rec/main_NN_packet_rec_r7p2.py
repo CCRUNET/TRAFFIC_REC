@@ -144,10 +144,6 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                         glVar.test_x = glVar.test_x.reshape(-1, 1, glVar.test_x.shape[1], 1)
                         glVar.val_x = glVar.val_x.reshape(-1, 1, glVar.val_x.shape[1], 1)
 
-                    if not testAct: activations = [""];
-                    else: activations = ["elu", "softmax", "selu", "softplus", "softsign", 
-                        "relu", "tanh", "sigmoid", "hard_sigmoid", "exponential", 
-                    "linear"]; 
                     
                     # Setups up labels
                     if glVar.NN_type == "MATCH": 
@@ -155,7 +151,12 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                         glVar.pred =  np.asarray(pd.get_dummies(glVar.pred).values)
                     else: labels = list(glVar.mod_list.columns.values)
                     NN_data.labels = labels
-                    
+                    #Automates testing of activation
+                    if not testAct: activations = [""];
+                    else: activations = ["elu", "softmax", "selu", "softplus", "softsign", 
+                        "relu", "tanh", "sigmoid", "hard_sigmoid", "exponential", 
+                    "linear"]; 
+                
                     for a1 in  activations:
                         NN_data.a1 = a1
                         for a2 in activations:
@@ -269,9 +270,9 @@ def main(options=None):
     options.range_train = list(np.asarray(options.range_train).astype(float))
     options.range_test = list(np.asarray(options.range_test).astype(float))
     glVar.exc_list_train = data_manip.getExclusionList(range_param = options.range_param, range_arr = options.range_train, 
-                                exc_param = options.exc_param, exc_arr = options.exc_train)
+                                exc_param = options.exc_param, exc_arr = options.exc_train, inc_arr = options.inc_arr)
     glVar.exc_list_test = data_manip.getExclusionList(range_param = options.range_param, range_arr = options.range_test, 
-                                exc_param = options.exc_param, exc_arr = options.exc_test)
+                                exc_param = options.exc_param, exc_arr = options.exc_test,  inc_arr = options.inc_arr)
 
     #Fuction to return a boolean value
     #Code from:
