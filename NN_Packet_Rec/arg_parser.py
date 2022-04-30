@@ -65,38 +65,37 @@ def argument_parser():
         help="Do you want to plot confusion matrices? Enter 0 for no and 1 for yes. [default=%(default)r]")    
 
     parser.add_argument(
-        "--exc-param", dest="exc_param", type=str, 
+        "--seq-type", dest="seq_type", type = str,
+        default= "inc",
+        help='''
+        Indicates the type of array for test sequencing \n\r
+        inc --> Inclusion Classes \n\r
+        exc--> Exclusion Classes
+        epochs --> number of epochs
+        samples --> samples
+        points --> points
+        act  --> activation functions
+        [default=%(default)r]
+        ''')
+
+    parser.add_argument(
+        "--seq-start", dest="seq_start", type = int,
+        default= 1,
+        help='''Indicates the starting element of the sequence array 
+        [default=%(default)r]''')
+    parser.add_argument(
+        "--seq-param", dest="seq_param", type=str, 
         default= "s1_mod",
         help="Name of the parameter colume for the exclusion list [default=%(default)r]")
     parser.add_argument(
-        "--exc-train", dest="exc_train", type=str, nargs='+',
-        default= [""],
-        help="Values in training data to be exluded [default=%(default)r]")
-    parser.add_argument(
-        "--exc-test", dest="exc_test", type=str, nargs='+',
-        default= [""],
+        "--seq-test", dest="seq_test", type=str, nargs='+',
+        default= [],
         help="Values in test data to be exluded [default=%(default)r]")
     parser.add_argument(
-        "--inc-arr", dest="inc_arr", type=str, nargs='+',
-        default= [""],
-        help="Values in data to be included in the test c_default=%(default)r]")
-    parser.add_argument(
-        "--exc-seq", dest="exc_seq", type = int,
-        default= 0,
-        help='''
-        Indicates if the exclusion we should sequence through the exclsion array \n\r
-        0 --> do not sequence \n\r
-        1 --> Sequence
-        [default=%(default)r]
-        ''')
-    parser.add_argument(
-        "--exc-start", dest="exc_start", type = int,
-        default= 1,
-        help='''Indicates the element of the exlusion array to where the sequence
-        should start
-        [default=%(default)r]''')
-    
-    
+        "--seq-train", dest="seq_train", type=str, nargs='+',
+        default= [],
+        help="Values in training data to be exluded [default=%(default)r]")
+
     parser.add_argument(
         "--range-param", dest="range_param", type=str, 
         default= "s1_sinr",
@@ -113,11 +112,7 @@ def argument_parser():
     parser.add_argument(
         "--col-param", dest="col_param", type=str, 
         default= "s1_sinr",
-        help="Name of column in logfile for parameter to be tested [default=%(default)r]")  
-    # parser.add_argument(
-    #     "--col-filename", dest="col_filename", type=str, 
-    #     default= "filename",
-    #     help="Name of column in logfile for parameter for filenames [default=%(default)r]")        
+        help="Name of column in logfile for parameter to be tested [default=%(default)r]")   
     parser.add_argument(
         "--col-mods", dest="col_mods", type=str, 
         default= "s1_mod",

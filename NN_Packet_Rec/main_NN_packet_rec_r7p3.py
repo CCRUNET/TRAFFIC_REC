@@ -28,13 +28,13 @@ import NN_AE_ANOM_b15 as NN_ANOM
 import NN_LSTM_b7 as NN_LSTM
 import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
-import compare_prediction_actual_r5 as conf_mat
+import compare_prediction_actual_r6 as conf_mat
 import read_binary_r1 as read_binary_file
 import arg_parser
 import glob_vars as globs 
 glVar = globs.glVar
 NN_data = globs.NN_data
-import data_manip
+import data_manip_r1 as data_manip
 import write_data_to_file
 
 import warnings                                                                                                                
@@ -208,12 +208,13 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                                 print( " Activation 1:  " + af1 + " Activation 2:  " + af2)
                                 if options.conf_mat: 
                                     #Sets up prediction array as a categorical arra
-                                    conf_mat.main(y_pred = glVar.pred, y_true = glVar.test_y,
+                                    cm = conf_mat.main(y_pred = glVar.pred, y_true = glVar.test_y,
                                         #Gets a list of modulation types that aligns with binary array 
                                         labels = labels, 
                                         myFolder = "Data/Results/", 
                                         myFile =glVar.dateCode + "_" + os.path.basename(glVar.folder_test) + "_"
                                         + glVar.NN_type)
+                                    glVar.temp = cm
 
 # %% Main unction that run the Neural Network  Code
 def main(options=None):
@@ -269,19 +270,14 @@ def main(options=None):
     #Gets list of files to exclude from the training and test data
     options.range_train = list(np.asarray(options.range_train).astype(float))
     options.range_test = list(np.asarray(options.range_test).astype(float))
-    glVar.exc_list_train = data_manip.getExclusionList(range_param = options.range_param, range_arr = options.range_train, 
-                                exc_param = options.exc_param, exc_arr = options.exc_train, inc_arr = options.inc_arr)
-    glVar.exc_list_test = data_manip.getExclusionList(range_param = options.range_param, range_arr = options.range_test, 
-                                exc_param = options.exc_param, exc_arr = options.exc_test,  inc_arr = options.inc_arr)
-
-    #Fuction to return a boolean value
-    #Code from:
-    #https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
-    def str2bool(v):
-        if isinstance(v, bool):return v
-        if v.lower() in ('yes', 'true', 't', 'y', '1'): return True
-        elif v.lower() in ('no', 'false', 'f', 'n', '0'): return False
-        else: return False
+    if len(options.seq_train) < len(options.seq_test): options.seq_train = options.seq_test
+    if len(options.seq_test) < len(options.seq_train): options.seq_test = options.seq_train
+    print("Train: ", options.seq_train)
+    glVar.exc_list_test = data_manip.getExclusionList(options, range_param = options.range_param, range_arr = options.range_test, 
+                                                      arr_in = options.seq_test)
+    glVar.exc_list_train = data_manip.getExclusionList(options, range_param = options.range_param,  range_arr = options.range_train,
+                                                       arr_in = options.seq_train)
+    
     glVar.time_data_collect = np.round(time.time() - glVar.time_data_collect, 2)
     
     #This for loop run the main function for all folders in the "folders" array
@@ -296,7 +292,7 @@ def main(options=None):
         """"""                
         runTest(glVar.dateCode, datapoints = options.num_points, 
         samples = options.samples, num_iter = options.iter, 
-        testAct = str2bool(options.test_act), options = options)
+        testAct = data_manip.str2bool(options.test_act), options = options)
 
     if options.rclone_loc == "1": 
         print("Copying data to " + options.rclone_loc)

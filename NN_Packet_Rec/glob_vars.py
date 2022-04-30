@@ -80,6 +80,7 @@ class glVar ():
     exc_type = []
     exc_list_train = []
     exc_list_test = []
+    inc_list = []
     iter_f = 0; 
     iter_test_dat = 0
     

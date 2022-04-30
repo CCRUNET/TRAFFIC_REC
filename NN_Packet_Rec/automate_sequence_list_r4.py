@@ -16,7 +16,7 @@ import arg_parser
 import glob_vars as globs 
 glVar = globs.glVar
 NN_data = globs.NN_data
-import main_NN_packet_rec_r7p1 as NN_main
+import main_NN_packet_rec_r7p2   as NN_main
 # %% 
 class loc_var():
     arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -27,27 +27,14 @@ def main(options=None):
     globs.glVar.options = options
     
     # When working with an inclusion list
-    if len(options.inc_arr) > 1: 
-        arr = options.inc_arr
+    if options.seq_type.lower() == "inc" or options.seq_type.lower()=="exc": 
+        arr = options.seq_test
         n = len(arr)
-        for i in range(options.exc_start-1, n):
-            options.inc_arr = arr[0: i+1]
-            print ("'\n'Inclusion List: ", options.inc_arr)
+        for i in range(options.seq_start-1, n):
+            options.seq_test = arr[0: i+1]
             o = NN_main.main(options)
             # Store data file to global
             options.file_results = o.file_results
-    # When working with an exlusion list
-    else: 
-        arr = options.exc_train
-        n = len(arr)
-        for i in range(options.exc_start-1, n):
-            options.exc_train = arr[0: i+1]
-            options.exc_test = arr[0: i+1]
-            print ("'\n'Exclusion List: ", options.exc_train)
-            o = NN_main.main(options)
-            # Store data file to global
-            options.file_results = o.file_results
-
     return 0
 #%% Runs main port of program
 if __name__ == '__main__':

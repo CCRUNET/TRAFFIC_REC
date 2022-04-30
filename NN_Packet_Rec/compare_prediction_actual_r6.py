@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import itertools
 import seaborn as sn
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_recall_fscore_support
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib as mpl
@@ -80,6 +81,19 @@ def confusionMatrixPlot(y_test, pred, labels_num, labels_text = [],
     #plt.show()
     plt.savefig(myFolder + myFile + "_conf_matrix")
     plt.close()
+    return cm
+# %%
+# Code modified from: 
+# https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html
+def getAccStats(cm):
+    tp = np.diag(cm)
+    fp = np.sum(cm, axis= 0) - tp
+    fn = np.sum(cm, axis= 1) - tp
+    prec = tp/(tp + fp)
+    recall = tp/(tp + fn)
+    acc = tp/(tp + fn + fp)
+    return prec, recall, acc
+
 #%%
 #Runs the main operations of the program
 def main(y_pred = "", y_true ="", labels= ["16qam", "8psk", "bpsk", "qpsk"], 
@@ -87,17 +101,22 @@ def main(y_pred = "", y_true ="", labels= ["16qam", "8psk", "bpsk", "qpsk"],
     setupArrays(y_pred, y_true, labels)
     
     labels_num = list(range(1, len(labels)+1))
-    confusionMatrixPlot(glVar.y_true_num, glVar.y_pred_num, labels_num, 
+    cm = confusionMatrixPlot(glVar.y_true_num, glVar.y_pred_num, labels_num, 
                         labels, myFolder, myFile)
 
-    pd.DataFrame({
-            "Number of correct predictions ":  [sum(glVar.comp)[0]], 
-            "Total Samples ": [glVar.comp.shape[0]],
-            "Accuracy" : [glVar.acc], 
-            "Distribution of True values": [glVar.conf_mat.sum(axis = 1)], 
-            "Distribution of Predictions": [glVar.conf_mat.sum(axis = 0)],
+    np.savetxt(myFolder + myFile + "_conf_mat.csv", cm, delimiter=',', 
+           header= ','.join(map(str, labels)))
+    prec, recall, acc = getAccStats(cm)
     
-            }).to_csv(myFolder + myFile + "_conf_info.csv", mode = 'a')
+    pd.DataFrame({
+        "labels": labels, 
+        "Precision ": prec,
+        "Recall" : recall, 
+        "Accuracy": acc, 
+        }).to_csv(myFolder + myFile + "_conf_stats.csv", mode = 'a')
+
+
+    return cm
 
 
 #%%

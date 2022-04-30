@@ -100,25 +100,40 @@ def getFolderList(loc_data):
     if not os.path.exists("Data/Results"): os.makedirs("Data/Results")
     return a
 
-
 # %% Shuffles Data
 def shuffleData(x):
     np.random.seed(1200)
     myPermutation = np.random.permutation(x.shape[0])
     x = x[myPermutation]
     return x    
+# %%uction to return a boolean value
+#Code from:
+#https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
+def str2bool(v):
+    if isinstance(v, bool):return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'): return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'): return False
+    else: return False
+
 #%%
-def getExclusionList(range_param  = "s1_sinr", range_arr = [-1000, 1000], exc_param = "s1_mod", exc_arr = [""], 
-                     inc_arr = []):
+def getExclusionList(options = None, range_param  = "s1_sinr", range_arr = [-1000, 1000], arr_in =[]):
     arr = []
     #Makes all values in exculsion column lower case
-    glVar.testData[exc_param] = glVar.testData[exc_param].str.lower() 
-    if len(inc_arr) > 0: 
+    glVar.testData[options.seq_param] = glVar.testData[options.seq_param].str.lower() 
+    if options.seq_type.lower() == "inc": 
         print("Using inclusion list to create an exclusion list")
-        exc_arr = set(glVar.testData[exc_param]).difference(inc_arr)
-    print("Creating exclusion list")   
+        exc_arr = list(set(glVar.testData[options.seq_param]).difference(arr_in))
+        inc_arr  = arr_in
+    elif options.seq_type.lower() == "exc": 
+        inc_arr= list(set(glVar.testData[options.seq_param]).difference(arr_in))
+        exc_arr = arr_in
+    print("Included classes: ", inc_arr)
+    print("Excluded classes: ", exc_arr)
+    print("Creating exclusion list")
+    print()
+
     for exc in exc_arr:
-        arr = arr + list(glVar.testData["filename"][glVar.testData[exc_param] == exc.lower()])
+        arr = arr + list(glVar.testData["filename"][glVar.testData[options.seq_param] == exc.lower()])
     #print([glVar.testData[range_param] >= range_arr[0]])
     arr = arr + list(glVar.testData["filename"][glVar.testData[range_param] < range_arr[0]])
     arr = arr + list(glVar.testData["filename"][glVar.testData[range_param] > range_arr[1]])
