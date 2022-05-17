@@ -127,6 +127,9 @@ def getExclusionList(options = None, range_param  = "s1_sinr", range_arr = [-100
     elif options.seq_type.lower() == "exc": 
         inc_arr= list(set(glVar.testData[options.seq_param]).difference(arr_in))
         exc_arr = arr_in
+    else: 
+        exc_arr = []
+        inc_arr = []
     print("Included classes: ", inc_arr)
     print("Excluded classes: ", exc_arr)
     print("Creating exclusion list")

@@ -89,10 +89,17 @@ def getAccStats(cm):
     tp = np.diag(cm)
     fp = np.sum(cm, axis= 0) - tp
     fn = np.sum(cm, axis= 1) - tp
+    tn = np.sum(np.sum(cm, axis= 1)) - np.sum(cm, axis= 0)
+    #print("tp: ", tp)
+    #print("tn: ", tn)
+    #print("fp: ", fp)
+    #print("fn: ", fn)
+    #print("Smaples: ", np.sum(cm, axis= 1))
     prec = tp/(tp + fp)
     recall = tp/(tp + fn)
-    acc = tp/(tp + fn + fp)
-    return prec, recall, acc
+    acc = (tp + tn)/(tp +tn + fn + fp)
+    f1 = 2*prec*recall/(prec+recall)
+    return prec, recall, acc, f1
 
 #%%
 #Runs the main operations of the program
@@ -106,13 +113,14 @@ def main(y_pred = "", y_true ="", labels= ["16qam", "8psk", "bpsk", "qpsk"],
 
     np.savetxt(myFolder + myFile + "_conf_mat.csv", cm, delimiter=',', 
            header= ','.join(map(str, labels)))
-    prec, recall, acc = getAccStats(cm)
+    prec, recall, acc, f1 = getAccStats(cm)
     
     pd.DataFrame({
         "labels": labels, 
         "Precision ": prec,
         "Recall" : recall, 
         "Accuracy": acc, 
+        "F1": f1
         }).to_csv(myFolder + myFile + "_conf_stats.csv", mode = 'a')
 
 

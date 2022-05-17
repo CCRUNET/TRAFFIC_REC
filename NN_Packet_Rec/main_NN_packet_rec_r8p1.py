@@ -18,6 +18,8 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 from keras import backend as K 
 np.random.seed(1200)  # For reproducibility
+sys.path.append('NN_AEU')
+
 
 #imports appropriate files
 import NN_Cat_b14 as NN_CAT
@@ -28,6 +30,7 @@ import NN_AE_ANOM_b15 as NN_ANOM
 import NN_LSTM_b7 as NN_LSTM
 import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
+import NN_AEU_b6 as AEU
 import compare_prediction_actual_r6 as conf_mat
 import read_binary_r1 as read_binary_file
 import arg_parser
@@ -64,6 +67,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
         elif NNet_test == "LSTM": NNet = NN_LSTM.NN()
         elif NNet_test == "SIMPLE": NNet = NN_SIMPLE.NN()
         elif NNet_test == "MATCH": NNet = MATCH.NN()
+        elif NNet_test == "AEU": NNet = AEU.NN()
         #else: NNet = NN_CAT.NN()
         
         glVar.NN_type = NNet.getType()    
@@ -126,7 +130,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                     glVar.test_y, glVar.val_y = np.split(np.asarray(glVar.mod_int), 2)
                     glVar.test_label, glVar.val_label = np.split(glVar.mod_type, 2)
                     print("Test Shape", glVar.test_x.shape)
-                    
+                    print("Train Shape", glVar.train_x.shape)
                     # #This shapes the array so that it is evenly divisible by 4
                     # #which allows it to be correctly processed by the nueral network
                     glVar.train_x = glVar.train_x[:, 0:(glVar.train_x.shape[1] - glVar.train_x.shape[1]%4)]
@@ -143,7 +147,6 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                         if len(glVar.train_x.shape) <= 2: glVar.train_x = glVar.train_x.reshape(-1, 1, glVar.train_x.shape[1], 1)
                         glVar.test_x = glVar.test_x.reshape(-1, 1, glVar.test_x.shape[1], 1)
                         glVar.val_x = glVar.val_x.reshape(-1, 1, glVar.val_x.shape[1], 1)
-
                     
                     # Setups up labels
                     if glVar.NN_type == "MATCH": 

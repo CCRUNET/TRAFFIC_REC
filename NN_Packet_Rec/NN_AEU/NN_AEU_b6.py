@@ -22,9 +22,8 @@ from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import RMSprop
 from tensorflow.keras.models import load_model
-from keras import utils as np_utils
-from tensorflow.keras.utils import to_categorical
-
+# from keras import utils as np_utils
+# from tensorflow.keras.utils import to_categorical
 
 #from keras.utils import multi_gpu_model
 os.environ["KERAS_BACKEND"] = "tensorflow"
@@ -34,11 +33,15 @@ np.random.seed(1200)  # For reproducibility
 # Just disables the warning, doesn't enable AVX/FMA
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-
+# Import files
+import AEU_Clustering_r1 as ae_clus
+import clus_accc_r1 as clus_acc
 # %%
 class glVar():
     temp = None
     temp_1 = None
+    ae_pred = None
+    ae_lab = None
 # %% Generates data
 #Creates two matrix arrays: One in ascending order and
 #One array in descending order
@@ -50,6 +53,7 @@ def generateSequence(m, n):
         arr = np.append(arr, [np.arange(i, n + i)], axis=0)
     arr = np.concatenate((arr, np.flip(arr)))
     lab = np.concatenate((np.full((m, 1), 0), np.full((m, 1), 1)))
+    #lab = pd.get_dummies(lab)
     # print(arr1.shape)
     return (arr, lab)
 
@@ -97,7 +101,6 @@ class NN():
         hidden = Dense(256, activation= act1)(hidden)
         hidden = Dense(samples, activation= act1)(hidden)
         return hidden
-    
                 
     def runNN(self, X_train, Y_train, X_test, Y_test, X_val, Y_val, 
               Y_train_label= None, Y_test_label = None, 
@@ -112,9 +115,8 @@ class NN():
         
         if not testAct: act1 = "elu"; act2 = "softmax" 
 
-        num_classes = Y_train.shape[1]
-        input_img = Input(shape=(X_train.shape[1],))  
-         
+        num_classes = Y_train.shape[1]        
+        input_img = Input(shape=(X_train.shape[1], X_train.shape[2], 1)) 
         time_train_start = time.time()
         #Training model
         if train_model:
@@ -124,73 +126,91 @@ class NN():
             if os.path.exists(model_file): os.remove(model_file)
             if os.path.exists(model_file): os.remove(model_file_encoder)
             if os.path.exists(hist_file): os.remove(hist_file)
-            
-            glVar.temp = input_img
+
             # encoded representation of input
             encoded = self.encode(input_img)
             # decoded representation of code 
             decoded = self.decode(encoded, samples = input_img.get_shape().as_list()[1])
         
-            # This model shows encoded images
-            encoder = Model(inputs = input_img, outputs=encoded, name = 'encoder')
-            encoder.save(model_file_encoder)
-            
             # Model which take input image and shows decoded images
             autoencoder = Model(inputs=input_img, outputs=decoded, name = 'autoencoder')
-            # Creating a decoder model
+
+            # Creating encoder model
+            encoder = Model(inputs = input_img, outputs=encoded, name = 'encoder')
+            encoder.save(model_file_encoder) 
             encoding_dim = 256
             encoded_input = Input(shape=(encoding_dim,))
             # last layer of the autoencoder model
             decoder_layer = autoencoder.layers[len(autoencoder.layers) - 1]
             # decoder model
             decoder = Model(encoded_input, decoder_layer(encoded_input), name = 'decoder')
-
+            # Prints a summary of each mode
             encoder.summary()
             decoder.summary()
             autoencoder.summary()
-        
+            
             autoencoder.compile(optimizer='adam',
-                              loss='binary_crossentropy',
+                              loss='mse',
                               metrics=['accuracy'])  
+            
             hist = autoencoder.fit(X_train, X_train,
                               epochs=epochs, batch_size=batch_size, 
-                              #validation_data=(X_val, Y_train),
+                              validation_data=(X_val, X_val),
                               shuffle=False) 
-            autoencoder.save_weights(weight_file)
+            model = autoencoder
+            model.save_weights(weight_file)
+            model.save(model_file)
             
-            
-    
-#%%
-# Code from: 
-# https://github.com/ardamavi/Unsupervised-Classification-with-Autoencoder/blob/master/Examples/Dog-Cat/Dog-Cat%20Classification%20With%20Autoencoder.ipynb
-def findClusters(encoder, X_train, Y_train, num_class = 4):
-    encode = encoder.predict(X_train)
-    glVar.temp = encode
-    sample = X_train.shape[2]; 
-    class_dict = np.zeros((num_class, num_class))
-    for i, sample in enumerate(Y_train):
-        class_dict[np.argmax(encode[i], axis=0)][np.argmax(sample)] += 1
-        
-    print(class_dict)
-        
-    neuron_class = np.zeros((num_class))
-    for i in range(num_class):
-        neuron_class[i] = np.argmax(class_dict[i], axis=0)
-    
-    print(neuron_class)   
-    
-    return 0
+            #loss_test_train = np.asarray(hist.history['loss'])
+            #acc_test_train = np.asarray(hist.history['accuracy'])
+            loss_val_train = np.asarray(hist.history['val_loss'])
+            acc_val_train = np.asarray(hist.history['val_accuracy'])
+            pd.DataFrame({"loss_val_train" : loss_val_train,
+                           "acc_val_train" : acc_val_train,
+                            }).to_csv(hist_file)
+
+        else:
+            model = load_model(model_file)
+            #model()
+            hist = pd.read_csv(hist_file)
+            #print(hist)
+            loss_val_train = hist["loss_val_train"].values
+            acc_val_train = hist["acc_val_train"].values                    
+        time_train = np.round(time.time() - time_train_start, 2)
+        time_test_start = time.time()
+
+        pred_ae = autoencoder.predict(X_test)
+        pred_enc = encoder.predict(X_test)
+        pred_clus = ae_clus.findClusters2(Y_test = Y_test, pred = pred_enc)
+        score = model.evaluate(X_test, X_test, verbose=1)
+        #Gets and outputs predciton of each class
+        acc, pred  = clus_acc.cluster_acc(Y_test, pred_clus)
+
+        time_test = np.round(time.time() - time_test_start, 2)
+
+        print("Train Data Shape: ", X_train.shape)
+        print("Accuracy ", acc)
+        print("Loss: ", score[0], '\n')
+
+        #Validation loss is taken as the final value in the array of validation loss in the training data
+        #Returns Test loss, test accuracy, validation loss, validation accuracy 
+        return (acc, float(score[1]), float(loss_val_train[0]), 
+                float(acc_val_train[0]), pred, act1, act2, time_train, time_test)  
+
 
 #%%    
 def test():
     NNet = NN()
     NNet.__init__
-    x, y = generateSequence(100, 100)
+    x, y = generateSequence(20, 10)
     #x = x.reshape(-1, 1, x.shape[1], 1)
     print(x.shape)
+    x = x.reshape(-1, 1, x.shape[1], 1) / np.max(x)
     x = NNet.shuffleData(x)
     y = NNet.shuffleData(y)
-    y = keras.utils.to_categorical(y)
+    #y = keras.utils.to_categorical(y)
+    glVar.temp = x
+
     a, b, c = NNet.genTrainTest(x)
     a1, b1, c1 = NNet.genTrainTest(y)
     #NNet.runAutoencoder(a, a, b, b)

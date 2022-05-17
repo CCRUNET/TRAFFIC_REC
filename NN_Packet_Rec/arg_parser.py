@@ -66,7 +66,7 @@ def argument_parser():
 
     parser.add_argument(
         "--seq-type", dest="seq_type", type = str,
-        default= "inc",
+        default= "enc",
         help='''
         Indicates the type of array for test sequencing \n\r
         inc --> Inclusion Classes \n\r
