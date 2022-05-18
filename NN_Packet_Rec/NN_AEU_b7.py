@@ -53,6 +53,7 @@ def generateSequence(m, n):
         arr = np.append(arr, [np.arange(i, n + i)], axis=0)
     arr = np.concatenate((arr, np.flip(arr)))
     lab = np.concatenate((np.full((m, 1), 0), np.full((m, 1), 1)))
+    lab = np.array(pd.get_dummies(lab.reshape(lab.shape[0])))
     #lab = pd.get_dummies(lab)
     # print(arr1.shape)
     return (arr, lab)
@@ -170,7 +171,8 @@ class NN():
                             }).to_csv(hist_file)
 
         else:
-            model = load_model(model_file)
+            autoencoder = load_model(model_file)
+            encoder = load_model(model_file_encoder)            
             #model()
             hist = pd.read_csv(hist_file)
             #print(hist)
@@ -202,14 +204,13 @@ class NN():
 def test():
     NNet = NN()
     NNet.__init__
-    x, y = generateSequence(20, 10)
+    x, y = generateSequence(100, 1000)
     #x = x.reshape(-1, 1, x.shape[1], 1)
     print(x.shape)
     x = x.reshape(-1, 1, x.shape[1], 1) / np.max(x)
     x = NNet.shuffleData(x)
     y = NNet.shuffleData(y)
-    #y = keras.utils.to_categorical(y)
-    glVar.temp = x
+    glVar.temp = y
 
     a, b, c = NNet.genTrainTest(x)
     a1, b1, c1 = NNet.genTrainTest(y)
