@@ -8,7 +8,7 @@ Devoloper:  Tina Burns
 School: Rutger University
 Advisor: Rchard Martin
 Python Version: Python3
-Code Revision: R3
+Code Revision: 
 
 This code for an Unsperivsed Autencoder based on Keras 
 """
@@ -34,7 +34,7 @@ np.random.seed(1200)  # For reproducibility
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Import files
-import AEU_Clustering_r1 as ae_clus
+import AEU_Clustering_kmeans_r2 as ae_clus
 import AEU_clus_acc_r1 as clus_acc
 # %%
 class glVar():

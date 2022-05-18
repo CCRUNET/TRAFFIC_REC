@@ -31,7 +31,7 @@ import NN_AE_ANOM_b15 as NN_ANOM
 import NN_LSTM_b7 as NN_LSTM
 import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
-import NN_AEU_b6 as AEU
+import NN_AEU_b7 as AEU
 import compare_prediction_actual_r6 as conf_mat
 import read_binary_r1 as read_binary_file
 import arg_parser
@@ -121,7 +121,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                     glVar.iter_test_dat = glVar.iter_test_dat +1
                     glVar.test_data = data_manip.genData(glVar.folder_test, NN_data.datapoints, samples//2,
                         pos = NN_data.datapoints*samples, mod = m, NN_Type = NNet_test, 
-                        arr_exc = glVar.exc_list_test)
+                        arr_exc = glVar.exc_list_test, stack_type = options.stack_type)
                     if len(glVar.IQ_pair) < 1: 
                         # Allows for data to be trained if test data is empty and the 
                         # data has not been trained yet                         

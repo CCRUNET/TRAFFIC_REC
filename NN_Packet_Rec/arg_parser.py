@@ -144,6 +144,17 @@ def argument_parser():
         float64 --> 64 bit floating point number '\n'
         ''')    
     parser.add_argument(
+        "--stack-type", dest="stack_type", type = str,
+        default= "STD",
+        help='''
+        Indicates how the data samples should be stacked \n\r
+        STD --> receives data as is. (Should be used for modulationation recognition)
+        PAIR --> Interleaves samples as pair of data \n\r
+        STACK--> TBD
+        ETH --> normalizes for ethernet packet recognition
+        [default=%(default)r]
+        ''')
+    parser.add_argument(
         "--rclone-loc", dest="rclone_loc", type=str,
         default= "0",
         help="Rclone location for the data to be copied to [default=%(default)r]")

@@ -45,7 +45,8 @@ def getFileData(data_path, num_points_per_sample, num_samples_per_file,
     return x, np.asarray(y), np.asarray(z)
 # %% Main function of the program tha executes the main operations
 def genData(myFile, numDatapoints = 100, numSamples = 200, pos = 0, 
-            mod = "", NN_Type = "CAT", testing = True, arr_exc = []):    
+            mod = "", NN_Type = "CAT", testing = True, arr_exc = [], 
+            stack_type = "STD"):    
     my_dict = {}
     #Inputs information into global variables for later usage
     #The number of bytes must be divisible by 8 in order to properly work with the NN
@@ -55,9 +56,9 @@ def genData(myFile, numDatapoints = 100, numSamples = 200, pos = 0,
     #glVar.IQ_pair[:, 1::4] = 0 
     glVar.I = glVar.IQ_pair[:, 0::2]
     glVar.Q = glVar.IQ_pair[:, 1::2]
-    #glVar.IQ_pair = glVar.Q/np.max(glVar.Q)
-    #glVar.IQ_pair = glVar.I
-    glVar.IQ_pair = glVar.IQ_pair/np.max(glVar.Q) #Normalizes data
+    if stack_type =="ETH": glVar.IQ_pair = glVar.IQ_pair/np.max(glVar.Q) #Normalizes data for ethernet packets
+    #elif stack_type =="STACK": glVar.IQ_pair ==  np.concatenate((glVar.I, glVar.Q)) #Normalizes data for ethernet packets
+
     
     if len(glVar.IQ_pair) >= 1:
         #Shuffles the all data arrays
