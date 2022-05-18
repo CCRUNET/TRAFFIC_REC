@@ -24,6 +24,7 @@ sys.path.append('NN_AEU')
 #imports appropriate files
 import NN_Cat_b14 as NN_CAT
 import NN_Conv_b19 as NN_CAT_CONV
+import NN_Conv_2_b1 as NN_CNN2
 import NN_Binary_b14 as NN_BIN
 import NN_AE_STD_b14 as NN_AE
 import NN_AE_ANOM_b15 as NN_ANOM
@@ -62,6 +63,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
               or NNet_test == "FC"): 
             NNet = NN_CAT.NN()
         elif NNet_test == "CONV" or NNet_test == "CNN": NNet = NN_CAT_CONV.NN()
+        elif NNet_test == "CONV2" or NNet_test == "CNN2": NNet = NN_CNN2.NN()
         elif NNet_test == "BIN": NNet = NN_BIN.NN()
         elif NNet_test == "AE": NNet = NN_AE.NN()
         elif NNet_test == "LSTM": NNet = NN_LSTM.NN()
