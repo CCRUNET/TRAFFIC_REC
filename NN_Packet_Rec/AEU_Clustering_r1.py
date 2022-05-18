@@ -17,7 +17,7 @@ import os, numpy as np, pandas as pd
 np.random.seed(1200)  # For reproducibility
 
 # Import files
-import clustering_kmean_e3 as clus_kmean_3 
+import AEU_clustering_kmean_e3 as clus_kmean_3 
 
 #%%
 # Code from: 

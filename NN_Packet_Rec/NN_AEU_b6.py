@@ -35,7 +35,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 # Import files
 import AEU_Clustering_r1 as ae_clus
-import clus_accc_r1 as clus_acc
+import AEU_clus_acc_r1 as clus_acc
 # %%
 class glVar():
     temp = None
