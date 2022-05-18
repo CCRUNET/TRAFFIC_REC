@@ -48,7 +48,7 @@ class NN():
         K.clear_session()
     
     def getType(self):
-        return "CNN-2"
+        return "CNN2"
     
     # This function splits the array into three seperate arrays
     def genTrainTest(self, arr, axis=0):
@@ -64,22 +64,18 @@ class NN():
     #Main Neural Network
     def NN_CONV(self, data, act1 = "elu", act2 = "softmax", numClasses = 2):   
         hidden = data
-        # hidden = Conv2D(128, (3, 3), activation = act1, padding='same')(hidden)  # 7 x 7 x 128
-        # hidden = UpSampling2D((1))(hidden)  # 14 x 14 x 128
-        # hidden = Conv2D(64, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
-        # hidden = UpSampling2D((1, 2))(hidden)  # 28 x 28 x 64
-        hidden = Conv2D(8, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
-        hidden = UpSampling2D((1, 2))(hidden)  # 28 x 28 x 64
-        hidden = Conv2D(16, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
-        hidden = UpSampling2D((1, 2))(hidden)  # 28 x 28 x 64
-        hidden = Conv2D(32, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
-        hidden = UpSampling2D((1, 2))(hidden)  # 28 x 28 x 64
-        hidden = Conv2D(32, (3, 3), activation = act1, padding='same')(hidden)  # 28 x 28 x 32
+        hidden = Conv2D(8, (3, 3), activation = act1, padding='same')(hidden)  # 28 x 28 x 32
         hidden = MaxPooling2D(pool_size=(1, 2))(hidden)  # 14 x 14 x 32
         hidden = Conv2D(16, (3, 3), activation = act1, padding='same')(hidden)  # 28 x 28 x 32
         hidden = MaxPooling2D(pool_size=(1, 2))(hidden)  # 14 x 14 x 32
-        hidden = Conv2D(8, (3, 3), activation = act1, padding='same')(hidden)  # 28 x 28 x 32
+        hidden = Conv2D(32, (3, 3), activation = act1, padding='same')(hidden)  # 28 x 28 x 32
         hidden = MaxPooling2D(pool_size=(1, 2))(hidden)  # 14 x 14 x 32
+        hidden = Conv2D(32, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
+        hidden = UpSampling2D((1, 2))(hidden)  # 28 x 28 x 64
+        hidden = Conv2D(16, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
+        hidden = UpSampling2D((1, 2))(hidden)  # 28 x 28 x 64
+        hidden = Conv2D(8, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
+        hidden = UpSampling2D((1, 2))(hidden)  # 28 x 28 x 64
         # hidden = Conv2D(64, (3, 3), activation = act1, padding='same')(hidden)  # 14 x 14 x 64
         # hidden = MaxPooling2D(pool_size=(1, 2))(hidden)  # 7 x 7 x 64
         # hidden = Conv2D(128, (3, 3), activation = act1, padding='same')(hidden)  # 7 x 7 x 128 (small and thick)

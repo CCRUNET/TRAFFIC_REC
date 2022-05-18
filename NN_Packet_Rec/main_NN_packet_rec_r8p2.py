@@ -24,7 +24,7 @@ sys.path.append('NN_AEU')
 #imports appropriate files
 import NN_Cat_b14 as NN_CAT
 import NN_Conv_b19 as NN_CAT_CONV
-import NN_Conv_2_b1 as NN_CNN2
+import NN_CNN2_r2 as NN_CNN2
 import NN_Binary_b14 as NN_BIN
 import NN_AE_STD_b14 as NN_AE
 import NN_AE_ANOM_b15 as NN_ANOM
