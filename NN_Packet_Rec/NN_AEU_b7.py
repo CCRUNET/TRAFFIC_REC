@@ -181,10 +181,10 @@ class NN():
         time_train = np.round(time.time() - time_train_start, 2)
         time_test_start = time.time()
 
-        pred_ae = autoencoder.predict(X_test)
+        #pred_ae = autoencoder.predict(X_test)
         pred_enc = encoder.predict(X_test)
         pred_clus = ae_clus.findClusters2(Y_test = Y_test, pred = pred_enc)
-        score = model.evaluate(X_test, X_test, verbose=1)
+        score = autoencoder.evaluate(X_test, X_test, verbose=1)
         #Gets and outputs predciton of each class
         acc, pred  = clus_acc.cluster_acc(Y_test, pred_clus)
 
@@ -196,7 +196,7 @@ class NN():
 
         #Validation loss is taken as the final value in the array of validation loss in the training data
         #Returns Test loss, test accuracy, validation loss, validation accuracy 
-        return (acc, float(score[1]), float(loss_val_train[0]), 
+        return (float(score[0]), acc, float(loss_val_train[0]), 
                 float(acc_val_train[0]), pred, act1, act2, time_train, time_test)  
 
 

@@ -14,9 +14,10 @@ This code sequeces to through neural netww
 #imports appropriate files
 import arg_parser
 import glob_vars as globs 
+import sklearn
 glVar = globs.glVar
 NN_data = globs.NN_data
-import main_nn_packet_rec_r7p3   as NN_main
+import main_NN_packet_rec_r8p2   as NN_main
 # %% 
 class loc_var():
     arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

@@ -45,6 +45,7 @@ def generateTestSequence(m, n):
         arr = np.append(arr, [np.arange(i, n + i)], axis=0)
     arr = np.concatenate((arr, np.flip(arr)))
     lab = np.concatenate((np.full((m, 1), 0), np.full((m, 1), 1)))
+    lab = np.array(pd.get_dummies(lab.reshape(lab.shape[0])))
     # print(arr1.shape)
     return (arr, lab)
 

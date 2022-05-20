@@ -25,6 +25,10 @@ import random
 import warnings                                                                                                                
 warnings.filterwarnings('ignore')
 
+#%%
+class glVar():
+    temp = None
+
 # %%
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -94,11 +98,12 @@ def cluster_acc(y_true, y_pred):
     """
     # Determine if y_true is  categorical array. 
     if len(y_true.shape)>1: y_true = cat_to_num(y_true)
-    #print(y_true)
     y_true = y_true.astype(np.int64)
     assert y_pred.size == y_true.size
     D = max(y_pred.max(), y_true.max()) + 1
     w = np.zeros((D, D), dtype=np.int64)
+    #print("Y Pred: ", y_pred)
+    #print("Y True: ", y_true)
     for i in range(y_pred.size):
         w[y_pred[i], y_true[i]] += 1
     # Get assignment of actual label to predicted classes
