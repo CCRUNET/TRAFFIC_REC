@@ -31,7 +31,8 @@ import NN_AE_ANOM_b15 as NN_ANOM
 import NN_LSTM_b7 as NN_LSTM
 import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
-import NN_AEU_b7 as AEU
+import NN_AEU_b8 as AEU
+import NN_SOM_b2_loop as SOM
 import compare_prediction_actual_r6 as conf_mat
 import read_binary_r1 as read_binary_file
 import arg_parser
@@ -70,6 +71,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
         elif NNet_test == "SIMPLE": NNet = NN_SIMPLE.NN()
         elif NNet_test == "MATCH": NNet = MATCH.NN()
         elif NNet_test == "AEU": NNet = AEU.NN()
+        elif NNet_test == "SOM": NNet = SOM.NN()
         #else: NNet = NN_CAT.NN()
         
         glVar.NN_type = NNet.getType()    
@@ -145,11 +147,15 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                         if len(glVar.train_x.shape) <= 2: glVar.train_x = glVar.train_x.reshape(-1, glVar.train_x.shape[1], 1)
                         glVar.test_x = glVar.test_x.reshape(-1, glVar.test_x.shape[1], 1)
                         glVar.val_x = glVar.val_x.reshape(-1, glVar.val_x.shape[1], 1)
+                    elif NNet_test == "SOM":
+                        glVar.train_x = glVar.train_x
+                        glVar.test_x = glVar.test_x
+                        glVar.val_x = glVar.val_x   
                     elif NNet_test != "MATCH":
                         if len(glVar.train_x.shape) <= 2: glVar.train_x = glVar.train_x.reshape(-1, 1, glVar.train_x.shape[1], 1)
                         glVar.test_x = glVar.test_x.reshape(-1, 1, glVar.test_x.shape[1], 1)
                         glVar.val_x = glVar.val_x.reshape(-1, 1, glVar.val_x.shape[1], 1)
-                    
+
                     # Setups up labels
                     if glVar.NN_type == "MATCH": 
                         labels = pd.get_dummies(glVar.pred).columns.tolist()

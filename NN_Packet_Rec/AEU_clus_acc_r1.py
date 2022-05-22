@@ -18,7 +18,8 @@ from __future__ import division, print_function
 import numpy as np
 import torch
 import torch.nn as nn
-from sklearn.utils.linear_assignment_ import linear_assignment
+from scipy.optimize import linear_sum_assignment as linear_assignment
+# 'sklearn.utils.linear_assignment_'
 import os, argparse
 import random
 
@@ -111,6 +112,8 @@ def cluster_acc(y_true, y_pred):
     This maps the corresponding predicted class labels to the
     to the actual class labels'''
     ind = linear_assignment(w.max() - w) 
+    ind = np.asarray(ind)
+    ind = np.transpose(ind)
     acc = sum([w[i, j] for i, j in ind]) * 1.0 / y_pred.size
     pred_class = label_pred_arr(y_pred, ind)
     return (acc, pred_class)
