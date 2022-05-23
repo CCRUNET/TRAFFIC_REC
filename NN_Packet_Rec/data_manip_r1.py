@@ -57,9 +57,8 @@ def genData(myFile, numDatapoints = 100, numSamples = 200, pos = 0,
     glVar.I = glVar.IQ_pair[:, 0::2]
     glVar.Q = glVar.IQ_pair[:, 1::2]
     if stack_type =="ETH": glVar.IQ_pair = glVar.IQ_pair/np.max(glVar.Q) #Normalizes data for ethernet packets
-    #elif stack_type =="STACK": glVar.IQ_pair ==  np.concatenate((glVar.I, glVar.Q)) #Normalizes data for ethernet packets
-
-    
+    elif stack_type =="STACK": glVar.IQ_pair ==  np.concatenate((glVar.I, glVar.Q)) #Stacks I and Q data consequtively
+ 
     if len(glVar.IQ_pair) >= 1:
         #Shuffles the all data arrays
         glVar.IQ_pair = shuffleData(glVar.IQ_pair)

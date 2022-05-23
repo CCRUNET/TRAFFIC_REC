@@ -77,8 +77,8 @@ class NN():
               epochs = 10, batch_size = 128, testAct = False, mod = '',
               train_model = True, folder_NN_hist = "NN_Hist"):   
         #Sets files to store training information
-        weight_file = os.path.join(folder_NN_hist, "SOM_weights.csv").replace(r'\'', '/'); 
-        model_file = os.path.join(folder_NN_hist, "SOM_model.p").replace(r'\'', '/'); 
+        weight_file = os.path.join(folder_NN_hist, "SOM_weights").replace(r'\'', '/').replace('//', '//'); 
+        model_file = os.path.join(folder_NN_hist, "SOM_model.p").replace(r'\'', '/').replace('//', '//'); 
 
         num_classes = Y_train.shape[1]        
         time_train_start = time.time()
@@ -89,19 +89,20 @@ class NN():
             if os.path.exists(weight_file): os.remove(weight_file)
             if os.path.exists(model_file): os.remove(model_file)
 
-            som = MiniSom(num_classes , X_train.shape[0], X_train.shape[1], sigma=5, learning_rate=0.1) 
-
+            #som = MiniSom(num_classes , X_train.shape[0], X_train.shape[1], sigma=5, learning_rate=0.6) 
+            som = MiniSom (num_classes, 20, X_train.shape[1], sigma=0.5, learning_rate=0.6) 
+            #som = MiniSom (num_classes, 20, X_train.shape[1]) 
+            som.train(X_train, 10000)
             # saving the som in the file som.p
             pickle.dump( som, open( model_file, "wb" ) )
-            #np.savetxt(weight_file, som.get_weights(), delimiter=',')
-            glVar.temp_1 = som
+            np.save(weight_file, som.get_weights())
             loss_val_train = 0
             acc_val_train = 0
 
         else:
-            # laoding file  
-            pickle.load( som, open( model_file, "rb" ) )
-                    
+            # laoding file
+            #weights = np.load(weight_file + ".npy")
+            som = pickle.load(open( model_file, "rb" ) )
             loss_val_train = 0
             acc_val_train = 0 
                 
@@ -117,8 +118,9 @@ class NN():
 
         time_test = np.round(time.time() - time_test_start, 2)
 
-        print("Train Data Shape: ", X_train.shape)
+        #print("Prediction: ", pred)
         print("Accuracy ", float(acc))
+ 
 
         #Validation loss is taken as the final value in the array of validation loss in the training data
         #Returns Test loss, test accuracy, validation loss, validation accuracy 
@@ -131,7 +133,7 @@ def reshape_arr(x):
     return(x)
 
 #%%    
-def test():
+def test(train_data = True):
     NNet = NN()
     NNet.__init__
     x, y = generateSequence(1000, 1000)
@@ -144,7 +146,7 @@ def test():
     a, b, c = NNet.genTrainTest(x)
     a1, b1, c1 = NNet.genTrainTest(y)
     #NNet.runAutoencoder(a, a, b, b)
-    NNet.runNN(a, a1, b, b1, c, c1, train_model = True)
+    NNet.runNN(a, a1, b, b1, c, c1, train_model = train_data)
 
 #%% Testing Autoencoder alone
 if __name__ == '__main__':

@@ -79,32 +79,38 @@ class NN():
         #Sets files to store training information
         weight_file = os.path.join(folder_NN_hist, "SOM_weights.csv").replace(r'\'', '/'); 
         model_file = os.path.join(folder_NN_hist, "SOM_model.p").replace(r'\'', '/');
+        data_file = "Data/SOM_sigma.csv"
         num_classes = Y_train.shape[1]        
         
         #Removes previous files to prevent file creation errors
         if not os.path.exists(folder_NN_hist): os.makedirs(folder_NN_hist)
         if os.path.exists(weight_file): os.remove(weight_file)
         if os.path.exists(model_file): os.remove(model_file)
+        if os.path.exists(data_file): os.remove(data_file)
         loss_val_train = 0
         acc_val_train = 0
         header = True
-        for sig in [1, 4, 5, 10, 20, 30, 40, 50]:
-            for lr in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:               
-                som = MiniSom(num_classes , X_train.shape[0], X_train.shape[1], sigma=sig, learning_rate=lr) 
-                pred = []
-                for i in X_test: pred.append(som.winner(i)[0])
-                pred = np.asarray(pred)
-                #Gets and outputs predciton of each class
-                acc, pred  = clus_acc.cluster_acc(Y_test, pred)
-                print("Acc: " + str(acc) + " Sigma: " + str(sig) + " LR: " + str(lr)) 
-                pd.DataFrame({
-                    #"Datatype" : [i], 
-                    "Acc":acc, 
-                    "Learning Rate ": [lr],
-                    "Sigma": [sig],        
-                    }).to_csv("Data/SOM_sigma.csv", mode = 'a', 
-                              header = header)
-                header = False
+        for sig in [0.3, 0.5, 0.6, 0.65, 0.7, 1]:
+            for lr in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+                #for x in [ 1, 4, 5, 10, 20, 30, 40, 50, 100, 200]:
+                for size in [20, 50]:    
+                    som = MiniSom(num_classes , size, X_train.shape[1], sigma=sig, learning_rate=lr) 
+                    som.train(X_train, 100)
+                    pred = []
+                    for i in X_test: pred.append(som.winner(i)[0])
+                    pred = np.asarray(pred)
+                    #Gets and outputs predciton of each class
+                    acc, pred  = clus_acc.cluster_acc(Y_test, pred)
+                    print("Acc: " + str(acc) + " Sigma: " + str(sig) + " LR: " + str(lr) + " Size: " + str(size)) 
+                    pd.DataFrame({
+                        #"Datatype" : [i], 
+                        "Acc":acc, 
+                        "Learning Rate ": [lr],
+                        "Sigma": [sig],        
+                        "Size": [size], 
+                        }).to_csv(data_file, mode = 'a', 
+                                  header = header)
+                    header = False
 
 
         print("Train Data Shape: ", X_train.shape)

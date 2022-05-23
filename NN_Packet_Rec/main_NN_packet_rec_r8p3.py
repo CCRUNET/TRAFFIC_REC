@@ -32,7 +32,7 @@ import NN_LSTM_b7 as NN_LSTM
 import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
 import NN_AEU_b8 as AEU
-import NN_SOM_b2_loop as SOM
+import NN_SOM_b2 as SOM
 import compare_prediction_actual_r6 as conf_mat
 import read_binary_r1 as read_binary_file
 import arg_parser
