@@ -100,6 +100,7 @@ def cluster_acc(y_true, y_pred):
     # Determine if y_true is  categorical array. 
     if len(y_true.shape)>1: y_true = cat_to_num(y_true)
     y_true = y_true.astype(np.int64)
+    
     assert y_pred.size == y_true.size
     D = max(y_pred.max(), y_true.max()) + 1
     w = np.zeros((D, D), dtype=np.int64)

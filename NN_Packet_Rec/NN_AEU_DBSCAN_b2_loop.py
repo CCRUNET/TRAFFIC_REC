@@ -185,14 +185,14 @@ class NN():
         time_test_start = time.time()
 
         #pred_ae = autoencoder.predict(X_test)
-        pred_enc = encoder.predict(X_test)
+        pred_enc = encoder.predict(X_test)        
+        p = pred_enc.reshape(pred_enc.shape[0], pred_enc.shape[2])
+        pred_dbscan = dbscan(p, Y_test)
+        pred = dbscan.labels_ # getting the labels
         score = autoencoder.evaluate(X_test, X_test, verbose=1)
         #Gets and outputs predciton of each class
-        p = pred_enc.reshape(pred_enc.shape[0], pred_enc.shape[2])      
-        pred_dbscan = dbscan(p, 0.318, 7)
-        pred_clus = ae_clus.findClusters2(Y_test = Y_test, pred = pred_dbscan)
-        
-        acc, pred  = clus_acc.cluster_acc(Y_test, pred_clus)
+        acc, pred  = clus_acc.cluster_acc(Y_test, pred)
+
         time_test = np.round(time.time() - time_test_start, 2)
 
         print("Train Data Shape: ", X_train.shape)
@@ -206,10 +206,17 @@ class NN():
                 float(acc_val_train[0]), pred, act1, act2, time_train, time_test)  
 
 #%% 
-def dbscan(x, eps=0.3, ms=4):
-    dbscan = DBSCAN(eps = eps, min_samples = ms).fit(x) # fitting the model
-    lab = dbscan.labels_ # getting the labels
-    return lab 
+def dbscan(x, y):
+    #for eps in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+    for eps in [0.31, 312, 0.313, 0.314, 0.315, 0.316, 0.317, 0.318, 0.319, 0.32 ]:
+        for ms in [4, 5, 6, 7, 8]:
+            # cluster the data into five clusters
+            dbscan = DBSCAN(eps = eps, min_samples = ms).fit(x) # fitting the model
+            pred = dbscan.labels_ # getting the labels
+            acc, pred  = clus_acc.cluster_acc(y, pred)
+            print("EPS: " + str(eps) + " Min Samples: " + str(ms) + " Acc: " + str(acc) 
+                  + " Classes: " + str(np.unique(pred)))
+    return 0
 
 #%%    
 def test():

@@ -11,6 +11,9 @@ Python Version: Python3
 Code Revision: 
 
 This code for an Unsperivsed Autencoder based on Keras 
+
+https://www.section.io/engineering-education/dbscan-clustering-in-python/#:~:text=DBSCAN%20is%20a%20popular%20density,number%20of%20clusters%20required%20prior.
+
 """
 # %%
 #Imports necessary libraries 
@@ -24,7 +27,6 @@ from keras.optimizers import RMSprop
 from tensorflow.keras.models import load_model
 # from keras import utils as np_utils
 # from tensorflow.keras.utils import to_categorical
-from sklearn.cluster import DBSCAN
 
 #from keras.utils import multi_gpu_model
 os.environ["KERAS_BACKEND"] = "tensorflow"
@@ -70,7 +72,7 @@ class NN():
         K.clear_session()
         
     def getType(self):
-        return "DBSCAN"
+        return "AE-U"
         
     # This function splits the array into three seperate arrays
     def genTrainTest(self, arr):
@@ -91,14 +93,12 @@ class NN():
         hidden = Dense(128, activation= act1)(hidden)
         hidden = Dense(64, activation = act1)(hidden)
         hidden = Dense(32, activation = act1)(hidden)
-        hidden = Dense(1, activation = act1)(hidden)
         return hidden
     
     #Decodeds data
     def decode(self, hidden, act1 = "relu", samples = 1000):
         #Decoder
         #hidden1 = Flatten()(hidden1)
-        hidden = Dense(1, activation = act1)(hidden)
         hidden = Dense(32, activation= act1)(hidden)
         hidden = Dense(64, activation=  act1)(hidden)
         hidden = Dense(128, activation= act1)(hidden)
@@ -186,30 +186,22 @@ class NN():
 
         #pred_ae = autoencoder.predict(X_test)
         pred_enc = encoder.predict(X_test)
+        pred_clus = ae_clus.findClusters2(Y_test = Y_test, pred = pred_enc)
         score = autoencoder.evaluate(X_test, X_test, verbose=1)
         #Gets and outputs predciton of each class
-        p = pred_enc.reshape(pred_enc.shape[0], pred_enc.shape[2])      
-        pred_dbscan = dbscan(p, 0.318, 7)
-        pred_clus = ae_clus.findClusters2(Y_test = Y_test, pred = pred_dbscan)
-        
         acc, pred  = clus_acc.cluster_acc(Y_test, pred_clus)
+
         time_test = np.round(time.time() - time_test_start, 2)
 
         print("Train Data Shape: ", X_train.shape)
         print("Accuracy ", acc)
         print("Loss: ", score[0], '\n')
-        print("Classes: ", np.unique(pred_dbscan))
 
         #Validation loss is taken as the final value in the array of validation loss in the training data
         #Returns Test loss, test accuracy, validation loss, validation accuracy 
         return (float(score[0]), acc, float(loss_val_train[0]), 
                 float(acc_val_train[0]), pred, act1, act2, time_train, time_test)  
 
-#%% 
-def dbscan(x, eps=0.3, ms=4):
-    dbscan = DBSCAN(eps = eps, min_samples = ms).fit(x) # fitting the model
-    lab = dbscan.labels_ # getting the labels
-    return lab 
 
 #%%    
 def test():
@@ -221,6 +213,7 @@ def test():
     x = x.reshape(-1, 1, x.shape[1], 1) / np.max(x)
     x = NNet.shuffleData(x)
     y = NNet.shuffleData(y)
+    glVar.temp = y
 
     a, b, c = NNet.genTrainTest(x)
     a1, b1, c1 = NNet.genTrainTest(y)
