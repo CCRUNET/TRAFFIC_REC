@@ -183,6 +183,7 @@ class NN():
 
         #pred_ae = autoencoder.predict(X_test)
         pred_enc = encoder.predict(X_test)
+        glVar.temp = pred_enc
         pred_clus = ae_clus.findClusters2(Y_test = Y_test, pred = pred_enc)
         score = autoencoder.evaluate(X_test, X_test, verbose=1)
         #Gets and outputs predciton of each class
@@ -210,7 +211,6 @@ def test():
     x = x.reshape(-1, 1, x.shape[1], 1) / np.max(x)
     x = NNet.shuffleData(x)
     y = NNet.shuffleData(y)
-    glVar.temp = y
 
     a, b, c = NNet.genTrainTest(x)
     a1, b1, c1 = NNet.genTrainTest(y)

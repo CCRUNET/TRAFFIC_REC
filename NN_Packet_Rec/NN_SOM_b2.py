@@ -58,7 +58,7 @@ class NN():
     def __init__(self):
         """"""        
     def getType(self):
-        return "AE-U"
+        return "SOM"
         
     # This function splits the array into three seperate arrays
     def genTrainTest(self, arr):

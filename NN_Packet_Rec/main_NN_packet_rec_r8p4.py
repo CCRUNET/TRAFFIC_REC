@@ -33,6 +33,7 @@ import NN_Simple_b3 as NN_SIMPLE
 import NN_matched_filter_b13 as MATCH
 import NN_AEU_b8 as AEU
 import NN_SOM_b2 as SOM
+import NN_AEU_DBSCAN_b2 as DBSCAN
 import compare_prediction_actual_r6 as conf_mat
 import read_binary_r1 as read_binary_file
 import arg_parser
@@ -72,6 +73,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
         elif NNet_test == "MATCH": NNet = MATCH.NN()
         elif NNet_test == "AEU": NNet = AEU.NN()
         elif NNet_test == "SOM": NNet = SOM.NN()
+        elif NNet_test == "DBSCAN": NNet = DBSCAN.NN()
         #else: NNet = NN_CAT.NN()
         
         glVar.NN_type = NNet.getType()    
@@ -226,6 +228,7 @@ def runTest(dateCode, datapoints = 100, samples = 200, writeData = True,
                                         myFile =glVar.dateCode + "_" + os.path.basename(glVar.folder_test) + "_"
                                         + glVar.NN_type)
                                     glVar.temp = cm
+                                
 
 # %% Main unction that run the Neural Network  Code
 def main(options=None):
